@@ -114,4 +114,5 @@ with gr.Blocks(title="RSP'S Media Converter") as demo:
         doc_output = gr.File(label="Converted Document")
         gr.Button("Convert").click(doc_converter, inputs=[doc_input, doc_format], outputs=doc_output)
 
-demo.launch()
+demo.launch(server_name="0.0.0.0", server_port=10000)
+
