@@ -1,0 +1,6 @@
+gradio
+ffmpeg-python
+pydub
+Pillow
+PyPDF2
+python-docx
