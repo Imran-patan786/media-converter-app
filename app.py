@@ -1,4 +1,3 @@
-
 import gradio as gr
 import os
 from PIL import Image
@@ -7,6 +6,8 @@ from pydub import AudioSegment
 import PyPDF2
 from docx import Document
 import numpy as np
+from pytube import YouTube
+import instaloader
 
 # Image Format Converter
 def image_converter(input_img, format):
@@ -69,6 +70,38 @@ def doc_converter(input_file, format):
             return "DOCX to PDF not implemented in this basic version"
     return output_path
 
+# YouTube Downloader
+def youtube_downloader(link, media_type):
+    try:
+        yt = YouTube(link)
+        if media_type == 'audio':
+            audio_stream = yt.streams.filter(only_audio=True).first()
+            output_path = "youtube_audio.mp4"
+            audio_stream.download(output_path=output_path)
+            return output_path
+        elif media_type == 'video':
+            video_stream = yt.streams.get_highest_resolution()
+            output_path = "youtube_video.mp4"
+            video_stream.download(output_path=output_path)
+            return output_path
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+# Instagram Downloader
+def instagram_downloader(link, media_type):
+    try:
+        L = instaloader.Instaloader()
+        post = instaloader.Post.from_url(L.context, link)
+        if media_type == 'audio':
+            return "Audio download from Instagram is not supported"
+        elif media_type == 'video':
+            video_url = post.video_url
+            output_path = "instagram_video.mp4"
+            L.download_url(video_url, output_path=output_path)
+            return output_path
+    except Exception as e:
+        return f"Error: {str(e)}"
+
 # Gradio Interface
 with gr.Blocks(title="RSP'S Media Converter") as demo:
     gr.Markdown("# Media Converter Suite")
@@ -114,5 +147,18 @@ with gr.Blocks(title="RSP'S Media Converter") as demo:
         doc_output = gr.File(label="Converted Document")
         gr.Button("Convert").click(doc_converter, inputs=[doc_input, doc_format], outputs=doc_output)
 
-demo.launch(server_name="0.0.0.0", server_port=10000)
+    with gr.Tab("YouTube Downloader"):
+        with gr.Row():
+            yt_link = gr.Textbox(label="Enter YouTube Link")
+            yt_media_type = gr.Dropdown(["audio", "video"], label="Select Media Type")
+        yt_output = gr.File(label="Downloaded Media")
+        gr.Button("Download").click(youtube_downloader, inputs=[yt_link, yt_media_type], outputs=yt_output)
 
+    with gr.Tab("Instagram Downloader"):
+        with gr.Row():
+            insta_link = gr.Textbox(label="Enter Instagram Link")
+            insta_media_type = gr.Dropdown(["audio", "video"], label="Select Media Type")
+        insta_output = gr.File(label="Downloaded Media")
+        gr.Button("Download").click(instagram_downloader, inputs=[insta_link, insta_media_type], outputs=insta_output)
+
+demo.launch(server_name="0.0.0.0", server_port=10000)
