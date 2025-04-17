@@ -4,3 +4,5 @@ pydub
 Pillow
 PyPDF2
 python-docx
+pytube
+instaloader
